@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Set, Optional  # for type hints to make code
 
 class TrackType(str, Enum):
     """Enumeration of available academic assistant tracks."""
+    TRACK_A1_CS = "track_a1_cs"           # computer science subject guide track with cs-specific features
     TRACK_A2_EXAM = "track_a2_exam"        # comprehensive exam preparation assistant track
 
 
@@ -342,10 +343,19 @@ EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
 # =============================================================================
 
 TRACK_DISPLAY_NAMES: Dict[TrackType, str] = {
+    TrackType.TRACK_A1_CS: "Track A1: Computer Science Subject Guide",
     TrackType.TRACK_A2_EXAM: "Track A2: Exam Preparation Assistant"
 }
 
 TRACK_DESCRIPTIONS: Dict[TrackType, str] = {
+    TrackType.TRACK_A1_CS: """
+    **Computer Science Subject Guide**
+    - CS-specific content processing with code examples and algorithms
+    - Programming language detection and syntax highlighting
+    - Algorithm explanation with step-by-step breakdowns
+    - Database, Networking, OS specific content understanding
+    - Indian university CS curriculum patterns
+    """,
     TrackType.TRACK_A2_EXAM: """
     **Exam Preparation Assistant**
     - Complete exam preparation workflows combining all uploaded materials
@@ -354,4 +364,5 @@ TRACK_DESCRIPTIONS: Dict[TrackType, str] = {
     - Custom study plan generation based on syllabus content
     - Progress tracking across topics and question practice sessions
     """
-}
+
+}# Note: TRACK_A2_EXAM added below

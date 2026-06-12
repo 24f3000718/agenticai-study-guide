@@ -35,6 +35,3 @@ nltk>=3.8.1
 
 # --- Math / misc ---
 sympy>=1.12
-
-torch
-torchvision

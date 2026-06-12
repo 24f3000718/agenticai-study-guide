@@ -1,6 +1,6 @@
 """
 Progress tracker component for the Academic Assistant.
-Displays exam preparation analytics and the A2 dashboard.
+Displays learning progress, weak areas, and the CS dashboard.
 """
 
 import streamlit as st
@@ -8,6 +8,114 @@ from datetime import datetime
 from typing import Dict, Any, List
 
 from config.settings import TrackType
+
+def _render_cs_dashboard_content():
+    """
+    Internal function to render CS dashboard content for Track A1.
+    shows detected code blocks, algorithms, and subject analysis.
+    """
+    track = st.session_state.get("current_track")
+    if not track:
+        return
+    
+    st.markdown("---")
+    st.header("CS Subject Analysis")
+    
+    summary = track.get_cs_subject_summary()
+    subjects = summary.get("identified_subjects", {})
+    
+    if subjects:
+        st.subheader("Detected CS Subjects")
+        sorted_subjects = sorted(subjects.items(), key=lambda x: x[1], reverse=True)
+        for subject, confidence in sorted_subjects:
+            st.progress(
+                confidence,
+                text=f"{subject} (Confidence: {confidence:.1%})"
+            )
+    else:
+        st.info("No CS subjects detected yet. Upload more CS-related documents.")
+    
+    primary_subject = summary.get("primary_subject")
+    if primary_subject:
+        st.success(f"📌 Primary Subject: **{primary_subject}**")
+    
+    st.subheader("Content Analysis")
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.metric(
+            "Code Blocks",
+            summary.get("code_blocks_found", 0),
+            help="Number of code snippets detected in documents"
+        )
+    
+    with col2:
+        st.metric(
+            "Algorithms",
+            summary.get("algorithms_detected", 0),
+            help="Number of algorithms identified"
+        )
+    
+    with col3:
+        st.metric(
+            "Total Subjects",
+            summary.get("total_subjects", 0),
+            help="Number of distinct CS subjects identified"
+        )
+    
+    if hasattr(track, 'detected_algorithms') and track.detected_algorithms:
+        st.subheader("Detected Algorithms")
+        for algo in track.detected_algorithms[:5]:
+            with st.expander(f"🔍 {algo.name}"):
+                st.caption(f"**Type:** {algo.algorithm_type.value}")
+                st.caption(f"**Time Complexity:** {algo.complexity_time}")
+                st.caption(f"**Space Complexity:** {algo.complexity_space}")
+                if algo.steps:
+                    st.caption("**Steps:**")
+                    for i, step in enumerate(algo.steps[:5], 1):
+                        st.caption(f" {i}. {step}")
+    
+    if hasattr(track, 'detected_code_blocks') and track.detected_code_blocks:
+        st.subheader("Code Language Distribution")
+        lang_counts = {}
+        for block in track.detected_code_blocks:
+            lang = block.language
+            lang_counts[lang] = lang_counts.get(lang, 0) + 1
+        for lang, count in sorted(lang_counts.items(), key=lambda x: x[1], reverse=True):
+            st.caption(f"• {lang}: {count} block(s)")
+
+def render_cs_dashboard():
+    """
+    Wrapper for CS dashboard that checks track type before rendering.
+    called from the main app for Track A1.
+    """
+    if st.session_state.get("track_type") == TrackType.TRACK_A1_CS:
+        track = st.session_state.get("current_track")
+        # provide quick switch track action on CS dashboard
+        col_header, col_action = st.columns([8, 1])
+        with col_header:
+            st.write("")
+        with col_action:
+            if st.button("Switch Track"):
+                st.session_state.track_selected = False
+                st.session_state.current_track = None
+                st.session_state.documents_processed = False
+                st.rerun()
+
+        if track and hasattr(track, 'get_cs_subject_summary'):
+            _render_cs_dashboard_content()
+
+def render_progress_dashboard():
+    """
+    Main progress dashboard router.
+    renders the appropriate dashboard based on active track type.
+    this is the entry point called from the main app.
+    """
+    track_type = st.session_state.get("track_type")
+
+    # Only CS track supported; render CS dashboard when available
+    if track_type == TrackType.TRACK_A1_CS:
+        render_cs_dashboard()
 
 # ---------------------------------------------------------------------------
 # Track A2 — Exam Preparation Dashboard
