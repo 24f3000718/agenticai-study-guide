@@ -204,18 +204,6 @@ def process_uploaded_documents(uploaded_files: List, content_types: Dict[str, st
         
         # show success message with count of processed files
         st.success(f"Processed {len(processed_files)} files successfully!")
-        
-        # track-specific document analysis
-        # different tracks analyze documents differently
-        if "current_track" in st.session_state and st.session_state.current_track:
-            track = st.session_state.current_track
-            
-            # only CS track is supported, so run CS-specific document analysis
-            if hasattr(track, 'analyze_document_for_cs_content'):
-                # for cs track, analyze first 10 chunks for cs content
-                # sampling to avoid processing overhead
-                for chunk in all_chunks[:10]:
-                    track.analyze_document_for_cs_content(chunk.page_content)
     
     # show failed files in an expandable section if any failures occurred
     if failed_files:
